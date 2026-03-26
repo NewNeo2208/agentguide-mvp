@@ -12,9 +12,35 @@ async def scrape_menu():
         browser = await p.chromium.launch(headless=True)
         page    = await browser.new_page()
 
-        print("Navigating to WeBox login page...")
-        await page.goto("https://www.webox.com/login", wait_until="networkidle")
+        print("Navigating to WeBox homepage...")
+        await page.goto("https://www.webox.com", wait_until="networkidle")
         await page.wait_for_timeout(3000)
+        await page.screenshot(path="debug_login.png")
+        print(f"Current URL: {page.url}")
+
+        # Click the Sign In button on homepage
+        print("Clicking Sign In button...")
+        try:
+            sign_in = await page.query_selector('a:has-text("Sign In"), button:has-text("Sign In"), a:has-text("Sign in"), button:has-text("Sign in"), a[href*="login"]')
+            if sign_in:
+                await sign_in.click()
+                await page.wait_for_load_state("networkidle")
+                await page.wait_for_timeout(2000)
+                print(f"After Sign In click URL: {page.url}")
+            else:
+                print("Sign In button not found, trying direct URL...")
+                await page.goto("https://www.webox.com/login", wait_until="networkidle")
+                await page.wait_for_timeout(2000)
+        except Exception as e:
+            print(f"Sign In click error: {e}")
+
+        await page.screenshot(path="debug_login_form.png")
+
+        # Print all inputs for debugging
+        inputs = await page.query_selector_all("input")
+        print(f"Found {len(inputs)} input fields")
+        for inp in inputs:
+            print(f"  Input: type={await inp.get_attribute('type')}, name={await inp.get_attribute('name')}, placeholder={await inp.get_attribute('placeholder')}")
 
         # Save screenshot for debugging
         await page.screenshot(path="debug_login.png")
