@@ -1,19 +1,10 @@
-# WeBox Menu — updated daily by AgentGuide scraper
+# WeBox Menu — March 26, 2026
 
-> This file is automatically updated every morning at 8AM PST.
-> If you are reading this placeholder, the scraper has not run yet.
-> Run the scraper manually from GitHub Actions to populate today's menu.
+**Order cutoff:** Lunch 10:00 AM PST / Dinner 3:00 PM PST
 
-## How to read this file
+## Available dishes
 
-Each dish is listed as:
-`- **Dish name** | $price | dietary tags`
+_(Menu items not found — check debug screenshots)_
 
 ---
-
-## Today's menu
-
-_(Run the scraper to populate this file)_
-
----
-_Last updated: never — placeholder file_
+_Scraped on 2026-03-26 07:03 PST_
