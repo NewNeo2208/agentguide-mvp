@@ -10,143 +10,81 @@ OUTPUT_FILE    = "webox_menu.md"
 async def scrape_menu():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        page    = await browser.new_page()
+        context = await browser.new_context()
+        page    = await context.new_page()
 
-        print("Navigating to WeBox homepage...")
+        # Step 1: Go to homepage and log in via the login form
+        print("Going to WeBox homepage...")
         await page.goto("https://www.webox.com", wait_until="networkidle")
         await page.wait_for_timeout(3000)
-        await page.screenshot(path="debug_login.png")
-        print(f"Current URL: {page.url}")
+        await page.screenshot(path="debug_01_homepage.png")
+        print(f"URL: {page.url}")
 
-        # Click the Sign In button on homepage
-        print("Clicking Sign In button...")
-        try:
-            sign_in = await page.query_selector('a:has-text("Sign In"), button:has-text("Sign In"), a:has-text("Sign in"), button:has-text("Sign in"), a[href*="login"]')
-            if sign_in:
-                await sign_in.click()
-                await page.wait_for_load_state("networkidle")
+        # Step 2: Check if already on menu page (auto-logged in)
+        if "boxMeal" in page.url or "welcome" in page.url:
+            print("Already logged in — skipping login step")
+        else:
+            print("Need to log in...")
+
+            # Try clicking Sign In link
+            try:
+                await page.click('a[href*="login"], a:has-text("Sign In"), button:has-text("Sign In")', timeout=5000)
                 await page.wait_for_timeout(2000)
-                print(f"After Sign In click URL: {page.url}")
-            else:
-                print("Sign In button not found, trying direct URL...")
-                await page.goto("https://www.webox.com/login", wait_until="networkidle")
-                await page.wait_for_timeout(2000)
-        except Exception as e:
-            print(f"Sign In click error: {e}")
-
-        await page.screenshot(path="debug_login_form.png")
-
-        # Print all inputs for debugging
-        inputs = await page.query_selector_all("input")
-        print(f"Found {len(inputs)} input fields")
-        for inp in inputs:
-            print(f"  Input: type={await inp.get_attribute('type')}, name={await inp.get_attribute('name')}, placeholder={await inp.get_attribute('placeholder')}")
-
-        # Save screenshot for debugging
-        await page.screenshot(path="debug_login.png")
-        print("Login page loaded. Attempting to fill credentials...")
-
-        # Try multiple possible selectors for email field
-        email_selectors = [
-            'input[type="email"]',
-            'input[name="email"]',
-            'input[placeholder*="email" i]',
-            'input[placeholder*="Email" i]',
-            'input[type="text"]',
-        ]
-
-        email_filled = False
-        for selector in email_selectors:
-            try:
-                el = await page.query_selector(selector)
-                if el:
-                    await el.fill(WEBOX_EMAIL)
-                    print(f"Email filled using selector: {selector}")
-                    email_filled = True
-                    break
-            except Exception as e:
-                print(f"Selector {selector} failed: {e}")
-                continue
-
-        if not email_filled:
-            print("ERROR: Could not find email input field")
-            await browser.close()
-            return
-
-        # Try multiple possible selectors for password field
-        password_selectors = [
-            'input[type="password"]',
-            'input[name="password"]',
-            'input[placeholder*="password" i]',
-            'input[placeholder*="Password" i]',
-        ]
-
-        password_filled = False
-        for selector in password_selectors:
-            try:
-                el = await page.query_selector(selector)
-                if el:
-                    await el.fill(WEBOX_PASSWORD)
-                    print(f"Password filled using selector: {selector}")
-                    password_filled = True
-                    break
-            except Exception as e:
-                print(f"Selector {selector} failed: {e}")
-                continue
-
-        if not password_filled:
-            print("ERROR: Could not find password input field")
-            await browser.close()
-            return
-
-        # Try multiple possible selectors for submit button
-        submit_selectors = [
-            'button[type="submit"]',
-            'button:has-text("Sign in")',
-            'button:has-text("Log in")',
-            'button:has-text("Login")',
-            'input[type="submit"]',
-        ]
-
-        for selector in submit_selectors:
-            try:
-                el = await page.query_selector(selector)
-                if el:
-                    await el.click()
-                    print(f"Submit clicked using selector: {selector}")
-                    break
             except Exception:
-                continue
+                print("Could not click Sign In, trying direct navigation...")
 
-        await page.wait_for_load_state("networkidle")
-        await page.wait_for_timeout(3000)
-        await page.screenshot(path="debug_after_login.png")
+            # Try filling login form using name attributes (we know them from logs)
+            try:
+                # username field has name="username"
+                await page.fill('input[name="username"]', WEBOX_EMAIL, timeout=10000)
+                await page.fill('input[name="password"]', WEBOX_PASSWORD, timeout=10000)
+                print("Credentials filled")
+
+                # Submit
+                await page.keyboard.press("Enter")
+                await page.wait_for_load_state("networkidle")
+                await page.wait_for_timeout(3000)
+            except Exception as e:
+                print(f"Login form error: {e}")
+
+        await page.screenshot(path="debug_02_after_login.png")
         print(f"After login URL: {page.url}")
 
+        # Step 3: Navigate to menu page
         print("Navigating to Box Meal menu...")
         await page.goto("https://www.webox.com/welcome/boxMeal", wait_until="networkidle")
-        await page.wait_for_timeout(4000)
-        await page.screenshot(path="debug_menu.png")
+        await page.wait_for_timeout(5000)
+        await page.screenshot(path="debug_03_menu.png")
+        print(f"Menu URL: {page.url}")
 
-        # Extract page text as fallback
+        # Step 4: Print page text to understand structure
         page_text = await page.inner_text("body")
-        print(f"Page text preview: {page_text[:500]}")
+        print(f"Page text preview:\n{page_text[:2000]}")
 
-        # Try to find menu items
+        # Step 5: Try many different selectors to find menu items
         items = []
-        possible_cards = await page.query_selector_all(
-            '[class*="meal"], [class*="dish"], [class*="menu"], [class*="food"], [class*="item"], [class*="card"]'
-        )
-        print(f"Found {len(possible_cards)} possible menu cards")
 
-        for card in possible_cards[:50]:
+        # Strategy 1: look for price patterns in text
+        all_elements = await page.query_selector_all("*")
+        price_elements = []
+        for el in all_elements[:500]:
             try:
-                text = await card.inner_text()
-                text = text.strip()
-                if len(text) > 5 and "$" in text:
-                    items.append(text)
+                text = (await el.inner_text()).strip()
+                if "$" in text and len(text) < 200 and len(text) > 3:
+                    price_elements.append(text)
             except Exception:
                 continue
+
+        print(f"Found {len(price_elements)} elements containing $")
+        for el in price_elements[:5]:
+            print(f"  Sample: {el[:100]}")
+
+        # Use price elements as menu items
+        seen = set()
+        for text in price_elements:
+            if text not in seen:
+                seen.add(text)
+                items.append(text)
 
         await browser.close()
 
@@ -162,21 +100,17 @@ async def scrape_menu():
         ]
 
         if items:
-            for item in items:
+            for item in items[:50]:
                 lines.append(f"- {item}")
+            print(f"Written {len(items)} items")
         else:
-            lines.append("_(Menu data could not be extracted — see debug screenshots in Actions artifacts)_")
+            lines.append("_(Menu items not found — check debug screenshots)_")
+            print("No items found")
 
-        lines += [
-            "",
-            "---",
-            f"_Scraped automatically on {datetime.now().strftime('%Y-%m-%d %H:%M')} PST_",
-        ]
+        lines += ["", "---", f"_Scraped on {datetime.now().strftime('%Y-%m-%d %H:%M')} PST_"]
 
         with open(OUTPUT_FILE, "w") as f:
             f.write("\n".join(lines))
-
-        print(f"Done — {len(items)} items written to {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     asyncio.run(scrape_menu())
