@@ -49,7 +49,7 @@
 
   "today_menu": {
     "note": "Today's menu is scraped daily and stored separately.",
-    "url": "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/agentguide-mvp/main/webox_menu.md"
+    "url": "https://raw.githubusercontent.com/NewNeo2208/agentguide-mvp/main/webox_menu.md"
   },
 
   "agent_instructions": "Before placing any order on WeBox: (1) Check today_menu.url for today's available dishes, prices and dietary tags. (2) Verify the current time against time_sensitive cutoffs — abort if past cutoff. (3) Follow ordering_flow step by step. (4) Do not browse the menu page to explore — use today_menu data to plan the full order first, then execute directly."
