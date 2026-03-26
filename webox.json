@@ -1,0 +1,56 @@
+{
+  "agentguide_version": "1.0",
+  "site": "webox.com",
+  "name": "WeBox",
+  "purpose": "Workplace meal delivery — individual Box Meals for lunch and dinner, delivered to your office",
+  "requires_login": true,
+  "login_url": "https://www.webox.com/login",
+  "menu_url": "https://www.webox.com/welcome/boxMeal",
+
+  "time_sensitive": {
+    "lunch_cutoff": "10:00 AM PST",
+    "dinner_cutoff": "3:00 PM PST",
+    "note": "Orders cannot be placed or modified after cutoff. Check cutoff before proceeding."
+  },
+
+  "ordering_flow": [
+    "1. Log in at webox.com/login",
+    "2. Go to webox.com/welcome/boxMeal",
+    "3. Select delivery date from the top navigation bar",
+    "4. Select meal period: Lunch or Dinner",
+    "5. Browse menu — filter by dietary preference if needed",
+    "6. Click dish to add to cart",
+    "7. Proceed to checkout",
+    "8. Confirm delivery address and submit order"
+  ],
+
+  "dietary_filters": [
+    "vegan",
+    "vegetarian",
+    "gluten-free",
+    "halal",
+    "kosher",
+    "keto"
+  ],
+
+  "known_friction": [
+    "Site is JavaScript-heavy — wait 3 seconds after page load before interacting",
+    "Menu is only visible after login",
+    "Delivery date must be selected before menu loads",
+    "Auto-orders exist — check if a meal is already ordered before placing a new one"
+  ],
+
+  "useful_features": {
+    "favorites": "Heart icon on any dish saves it. Access via My Favorites in sidebar.",
+    "auto_order": "Weekly schedule can be set under profile menu — check before manual ordering to avoid duplicates",
+    "guest_order": "Click Guest Order in sidebar to order for a visitor or client",
+    "order_cutoff_check": "Always verify cutoff time before starting — visible in top navigation bar"
+  },
+
+  "today_menu": {
+    "note": "Today's menu is scraped daily and stored separately.",
+    "url": "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/agentguide-mvp/main/webox_menu.md"
+  },
+
+  "agent_instructions": "Before placing any order on WeBox: (1) Check today_menu.url for today's available dishes, prices and dietary tags. (2) Verify the current time against time_sensitive cutoffs — abort if past cutoff. (3) Follow ordering_flow step by step. (4) Do not browse the menu page to explore — use today_menu data to plan the full order first, then execute directly."
+}
