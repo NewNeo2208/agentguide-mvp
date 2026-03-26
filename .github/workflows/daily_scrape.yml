@@ -1,0 +1,39 @@
+name: Daily WeBox Menu Scraper
+
+on:
+  schedule:
+    - cron: "0 15 * * 1-5"   # 8:00 AM PST Mon–Fri (UTC-7 in summer)
+  workflow_dispatch:           # also allows manual trigger from GitHub UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run scraper
+        env:
+          WEBOX_EMAIL:    ${{ secrets.WEBOX_EMAIL }}
+          WEBOX_PASSWORD: ${{ secrets.WEBOX_PASSWORD }}
+        run: python scraper.py
+
+      - name: Commit and push updated menu
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add menu.md
+          git diff --cached --quiet || git commit -m "chore: update WeBox menu $(date +'%Y-%m-%d')"
+          git push
