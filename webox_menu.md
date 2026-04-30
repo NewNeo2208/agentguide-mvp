@@ -1,4 +1,4 @@
-# WeBox Menu — April 29, 2026
+# WeBox Menu — April 30, 2026
 
 **Order cutoff:** Lunch 10:00 AM PST / Dinner 3:00 PM PST
 
@@ -7,4 +7,4 @@
 _(Menu items not found — check debug screenshots)_
 
 ---
-_Scraped on 2026-04-29 16:24 PST_
+_Scraped on 2026-04-30 16:13 PST_
