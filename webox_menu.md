@@ -1,4 +1,4 @@
-# WeBox Menu — August 28, 2026
+# WeBox Menu — August 31, 2026
 
 **Order cutoff:** Lunch 10:00 AM PST / Dinner 3:00 PM PST
 
@@ -10,4 +10,4 @@
 - $5.95
 
 ---
-_Scraped on 2026-08-28 23:46 PST_
+_Scraped on 2026-08-31 20:28 PST_
